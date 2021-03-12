@@ -23,11 +23,6 @@ tools-stamp
 buf-stamp
 artifacts
 
-# Data - ideally these don't exist
-baseapp/data/*
-client/lcd/keys/*
-mytestnet
-
 # Testing
 coverage.txt
 profile.out
