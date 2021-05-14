@@ -73,6 +73,23 @@ func GetConsensusState(store sdk.KVStore, cdc codec.BinaryCodec, height exported
 	return consensusState, nil
 }
 
+func getConsensusState(store sdk.KVStore, cdc codec.BinaryCodec, height exported.Height) (exported.ConsensusState, error) {
+	bz := store.Get(host.ConsensusStateKey(height))
+	if bz == nil {
+		return nil, sdkerrors.Wrapf(
+			clienttypes.ErrConsensusStateNotFound,
+			"consensus state does not exist for height %s", height,
+		)
+	}
+
+	consensusStateI, err := clienttypes.UnmarshalConsensusState(cdc, bz)
+	if err != nil {
+		return nil, sdkerrors.Wrapf(clienttypes.ErrInvalidConsensus, "unmarshal error: %v", err)
+	}
+
+	return consensusStateI, nil
+}
+
 // deleteConsensusState deletes the consensus state at the given height
 func deleteConsensusState(clientStore sdk.KVStore, height exported.Height) {
 	key := host.ConsensusStateKey(height)

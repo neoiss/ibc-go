@@ -166,11 +166,15 @@ func (k Keeper) ConnOpenTry(
 		return "", err
 	}
 
-	// Check that ChainA stored the correct ConsensusState of chainB at the given consensusHeight
-	if err := k.VerifyClientConsensusState(
-		ctx, connection, proofHeight, consensusHeight, proofConsensus, expectedConsensusState,
-	); err != nil {
-		return "", err
+	// NOTE: If the given clientState type is proxyclient, selfConsensusState must be wrapped with proxyConsensusState.
+	// However, in current IBC implementation, selfConsensusState is got from clientKeeper instead of getting it as parameters, we skip to verify the consensusState.
+	if clientState.ClientType() != "proxyclient" {
+		// Check that ChainA stored the correct ConsensusState of chainB at the given consensusHeight
+		if err := k.VerifyClientConsensusState(
+			ctx, connection, proofHeight, consensusHeight, proofConsensus, expectedConsensusState,
+		); err != nil {
+			return "", err
+		}
 	}
 
 	// store connection in chainB state
@@ -272,11 +276,15 @@ func (k Keeper) ConnOpenAck(
 		return err
 	}
 
-	// Ensure that ChainB has stored the correct ConsensusState for chainA at the consensusHeight
-	if err := k.VerifyClientConsensusState(
-		ctx, connection, proofHeight, consensusHeight, proofConsensus, expectedConsensusState,
-	); err != nil {
-		return err
+	// NOTE: If the given clientState type is proxyclient, selfConsensusState must be wrapped with proxyConsensusState.
+	// However, in current IBC implementation, selfConsensusState is got from clientKeeper instead of getting it as parameters, we skip to verify the consensusState.
+	if clientState.ClientType() != "proxyclient" {
+		// Ensure that ChainB has stored the correct ConsensusState for chainA at the consensusHeight
+		if err := k.VerifyClientConsensusState(
+			ctx, connection, proofHeight, consensusHeight, proofConsensus, expectedConsensusState,
+		); err != nil {
+			return err
+		}
 	}
 
 	k.Logger(ctx).Info("connection state updated", "connection-id", connectionID, "previous-state", connection.State.String(), "new-state", "OPEN")
