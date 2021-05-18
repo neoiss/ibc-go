@@ -123,7 +123,15 @@ func ApplyPrefix(prefix exported.Prefix, path MerklePath) (MerklePath, error) {
 	if prefix == nil || prefix.Empty() {
 		return MerklePath{}, sdkerrors.Wrap(ErrInvalidPrefix, "prefix can't be empty")
 	}
-	return NewMerklePath(append([]string{string(prefix.Bytes())}, path.KeyPath...)...), nil
+	keyPath := make([]string, len(path.KeyPath))
+	copy(keyPath[:], path.KeyPath)
+	switch prefix := prefix.(type) {
+	case MultiPrefix:
+		if len(keyPath) > 0 {
+			keyPath[0] = string(prefix.PathPrefix) + keyPath[0]
+		}
+	}
+	return NewMerklePath(append([]string{string(prefix.Bytes())}, keyPath...)...), nil
 }
 
 var _ exported.Proof = (*MerkleProof)(nil)
