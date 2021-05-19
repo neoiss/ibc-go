@@ -128,7 +128,7 @@ func ApplyPrefix(prefix exported.Prefix, path MerklePath) (MerklePath, error) {
 	switch prefix := prefix.(type) {
 	case MultiPrefix:
 		if len(keyPath) > 0 {
-			keyPath[0] = string(prefix.PathPrefix) + keyPath[0]
+			keyPath[0] = fmt.Sprintf("%s/%s", string(prefix.PathPrefix), keyPath[0])
 		}
 	}
 	return NewMerklePath(append([]string{string(prefix.Bytes())}, keyPath...)...), nil
