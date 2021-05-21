@@ -112,22 +112,9 @@ func (k Keeper) ConnOpenTry(
 		connectionID = k.GenerateConnectionIdentifier(ctx)
 	}
 
-	selfHeight := clienttypes.GetSelfHeight(ctx)
-	if consensusHeight.GTE(selfHeight) {
-		return "", sdkerrors.Wrapf(
-			sdkerrors.ErrInvalidHeight,
-			"consensus height is greater than or equal to the current block height (%s >= %s)", consensusHeight, selfHeight,
-		)
-	}
-
 	// validate client parameters of a chainB client stored on chainA
 	if err := k.clientKeeper.ValidateSelfClient(ctx, clientState); err != nil {
 		return "", err
-	}
-
-	expectedConsensusState, found := k.clientKeeper.GetSelfConsensusState(ctx, consensusHeight)
-	if !found {
-		return "", sdkerrors.Wrap(clienttypes.ErrSelfConsensusStateNotFound, consensusHeight.String())
 	}
 
 	// expectedConnection defines Chain A's ConnectionEnd
@@ -169,6 +156,11 @@ func (k Keeper) ConnOpenTry(
 	// NOTE: If the given clientState type is proxyclient, selfConsensusState must be wrapped with proxyConsensusState.
 	// However, in current IBC implementation, selfConsensusState is got from clientKeeper instead of getting it as parameters, we skip to verify the consensusState.
 	if clientState.ClientType() != "proxyclient" {
+		expectedConsensusState, found := k.clientKeeper.GetSelfConsensusState(ctx, consensusHeight)
+		if !found {
+			return "", sdkerrors.Wrap(clienttypes.ErrSelfConsensusStateNotFound, consensusHeight.String())
+		}
+
 		// Check that ChainA stored the correct ConsensusState of chainB at the given consensusHeight
 		if err := k.VerifyClientConsensusState(
 			ctx, connection, proofHeight, consensusHeight, proofConsensus, expectedConsensusState,
@@ -208,15 +200,6 @@ func (k Keeper) ConnOpenAck(
 	proofHeight exported.Height, // height that relayer constructed proofTry
 	consensusHeight exported.Height, // latest height of chainA that chainB has stored on its chainA client
 ) error {
-	// Check that chainB client hasn't stored invalid height
-	selfHeight := clienttypes.GetSelfHeight(ctx)
-	if consensusHeight.GTE(selfHeight) {
-		return sdkerrors.Wrapf(
-			sdkerrors.ErrInvalidHeight,
-			"consensus height is greater than or equal to the current block height (%s >= %s)", consensusHeight, selfHeight,
-		)
-	}
-
 	// Retrieve connection
 	connection, found := k.GetConnection(ctx, connectionID)
 	if !found {
@@ -253,12 +236,6 @@ func (k Keeper) ConnOpenAck(
 		return err
 	}
 
-	// Retrieve chainA's consensus state at consensusheight
-	expectedConsensusState, found := k.clientKeeper.GetSelfConsensusState(ctx, consensusHeight)
-	if !found {
-		return clienttypes.ErrSelfConsensusStateNotFound
-	}
-
 	prefix := k.GetCommitmentPrefix()
 	expectedCounterparty := types.NewCounterparty(connection.ClientId, connectionID, commitmenttypes.NewMerklePrefix(prefix.Bytes()))
 	expectedConnection := types.NewConnectionEnd(types.TRYOPEN, connection.Counterparty.ClientId, expectedCounterparty, []*types.Version{version}, connection.DelayPeriod)
@@ -279,6 +256,12 @@ func (k Keeper) ConnOpenAck(
 	// NOTE: If the given clientState type is proxyclient, selfConsensusState must be wrapped with proxyConsensusState.
 	// However, in current IBC implementation, selfConsensusState is got from clientKeeper instead of getting it as parameters, we skip to verify the consensusState.
 	if clientState.ClientType() != "proxyclient" {
+		// Retrieve chainA's consensus state at consensusheight
+		expectedConsensusState, found := k.clientKeeper.GetSelfConsensusState(ctx, consensusHeight)
+		if !found {
+			return clienttypes.ErrSelfConsensusStateNotFound
+		}
+
 		// Ensure that ChainB has stored the correct ConsensusState for chainA at the consensusHeight
 		if err := k.VerifyClientConsensusState(
 			ctx, connection, proofHeight, consensusHeight, proofConsensus, expectedConsensusState,
