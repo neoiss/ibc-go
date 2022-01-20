@@ -77,21 +77,24 @@ func (k Keeper) SendPacket(
 	// check if packet is timed out on the receiving chain
 	latestHeight := clientState.GetLatestHeight()
 	timeoutHeight := packet.GetTimeoutHeight()
-	if !timeoutHeight.IsZero() && latestHeight.GTE(timeoutHeight) {
-		return sdkerrors.Wrapf(
-			types.ErrPacketTimeout,
-			"receiving chain block height >= packet timeout height (%s >= %s)", latestHeight, timeoutHeight,
-		)
-	}
 
 	clientType, _, err := clienttypes.ParseClientIdentifier(connectionEnd.GetClientID())
 	if err != nil {
 		return err
 	}
 
+	if clientType != exported.Proxy {
+		if !timeoutHeight.IsZero() && latestHeight.GTE(timeoutHeight) {
+			return sdkerrors.Wrapf(
+				types.ErrPacketTimeout,
+				"receiving chain block height >= packet timeout height (%s >= %s)", latestHeight, timeoutHeight,
+			)
+		}
+	}
+
 	// NOTE: this is a temporary fix. Solo machine does not support usage of 'GetTimestampAtHeight'
 	// A future change should move this function to be a ClientState callback.
-	if clientType != exported.Solomachine {
+	if clientType != exported.Solomachine && clientType != exported.Proxy {
 		latestTimestamp, err := k.connectionKeeper.GetTimestampAtHeight(ctx, connectionEnd, latestHeight)
 		if err != nil {
 			return err
