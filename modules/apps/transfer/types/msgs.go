@@ -72,7 +72,8 @@ func (msg MsgTransfer) ValidateBasic() error {
 
 // GetSignBytes implements sdk.Msg.
 func (msg MsgTransfer) GetSignBytes() []byte {
-	return sdk.MustSortJSON(AminoCdc.MustMarshalJSON(&msg))
+	return ModuleCdc.MustMarshal(&msg)
+	//	return sdk.MustSortJSON(AminoCdc.MustMarshalJSON(&msg))
 }
 
 // GetSigners implements sdk.Msg

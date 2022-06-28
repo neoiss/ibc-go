@@ -4,7 +4,6 @@ import (
 	"strings"
 	"time"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
@@ -52,5 +51,6 @@ func (ftpd FungibleTokenPacketData) ValidateBasic() error {
 
 // GetBytes is a helper for serialising
 func (ftpd FungibleTokenPacketData) GetBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&ftpd))
+	return ModuleCdc.MustMarshal(&ftpd)
+	//return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&ftpd))
 }
