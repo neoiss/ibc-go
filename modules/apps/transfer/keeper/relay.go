@@ -194,11 +194,8 @@ func (k Keeper) OnRecvPacket(ctx sdk.Context, packet channeltypes.Packet, data t
 	}
 
 	// decode the receiver address
-	receiver, err := sdk.AccAddressFromBech32(string(data.Receiver))
-	if err != nil {
-		return err
-	}
-
+	//receiver, err := sdk.AccAddressFromBech32(string(data.Receiver))
+	receiver := sdk.AccAddress(data.Receiver)
 	labels := []metrics.Label{
 		telemetry.NewLabel("source-port", packet.GetSourcePort()),
 		telemetry.NewLabel("source-channel", packet.GetSourceChannel()),
@@ -283,7 +280,11 @@ func (k Keeper) OnRecvPacket(ctx sdk.Context, packet channeltypes.Packet, data t
 		),
 	)
 
-	voucher := sdk.NewCoin(voucherDenom, sdk.NewIntFromUint64(data.Amount))
+	// HACK: use sdk.NewCoin() to validate denom
+	voucher := sdk.Coin{
+		Denom:  voucherDenom,
+		Amount: sdk.NewIntFromUint64(data.Amount),
+	}
 
 	// mint new tokens if the source of the transfer is the same chain
 	if err := k.bankKeeper.MintCoins(
