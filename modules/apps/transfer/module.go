@@ -346,7 +346,7 @@ func (am AppModule) OnRecvPacket(
 		sdk.NewEvent(
 			types.EventTypePacket,
 			sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
-			sdk.NewAttribute(types.AttributeKeyReceiver, data.Receiver),
+			sdk.NewAttribute(types.AttributeKeyReceiver, string(data.Receiver)),
 			sdk.NewAttribute(types.AttributeKeyDenom, data.Denom),
 			sdk.NewAttribute(types.AttributeKeyAmount, fmt.Sprintf("%d", data.Amount)),
 			sdk.NewAttribute(types.AttributeKeyAckSuccess, fmt.Sprintf("%t", ack.Success())),
@@ -385,7 +385,7 @@ func (am AppModule) OnAcknowledgementPacket(
 		sdk.NewEvent(
 			types.EventTypePacket,
 			sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
-			sdk.NewAttribute(types.AttributeKeyReceiver, data.Receiver),
+			sdk.NewAttribute(types.AttributeKeyReceiver, string(data.Receiver)),
 			sdk.NewAttribute(types.AttributeKeyDenom, data.Denom),
 			sdk.NewAttribute(types.AttributeKeyAmount, fmt.Sprintf("%d", data.Amount)),
 			sdk.NewAttribute(types.AttributeKeyAck, ack.String()),
@@ -434,7 +434,7 @@ func (am AppModule) OnTimeoutPacket(
 		sdk.NewEvent(
 			types.EventTypeTimeout,
 			sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
-			sdk.NewAttribute(types.AttributeKeyRefundReceiver, data.Sender),
+			sdk.NewAttribute(types.AttributeKeyRefundReceiver, string(data.Sender)),
 			sdk.NewAttribute(types.AttributeKeyRefundDenom, data.Denom),
 			sdk.NewAttribute(types.AttributeKeyRefundAmount, fmt.Sprintf("%d", data.Amount)),
 		),

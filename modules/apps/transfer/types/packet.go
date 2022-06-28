@@ -28,8 +28,8 @@ func NewFungibleTokenPacketData(
 	return FungibleTokenPacketData{
 		Denom:    denom,
 		Amount:   amount,
-		Sender:   sender,
-		Receiver: receiver,
+		Sender:   []byte(sender),
+		Receiver: []byte(receiver),
 	}
 }
 
@@ -40,10 +40,10 @@ func (ftpd FungibleTokenPacketData) ValidateBasic() error {
 	if ftpd.Amount == 0 {
 		return sdkerrors.Wrap(ErrInvalidAmount, "amount cannot be 0")
 	}
-	if strings.TrimSpace(ftpd.Sender) == "" {
+	if strings.TrimSpace(string(ftpd.Sender)) == "" {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "sender address cannot be blank")
 	}
-	if strings.TrimSpace(ftpd.Receiver) == "" {
+	if strings.TrimSpace(string(ftpd.Receiver)) == "" {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "receiver address cannot be blank")
 	}
 	return ValidatePrefixedDenom(ftpd.Denom)

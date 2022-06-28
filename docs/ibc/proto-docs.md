@@ -282,8 +282,8 @@ https://github.com/cosmos/ics/tree/master/spec/ics-020-fungible-token-transfer#d
 | ----- | ---- | ----- | ----------- |
 | `denom` | [string](#string) |  | the token denomination to be transferred |
 | `amount` | [uint64](#uint64) |  | the token amount to be transferred |
-| `sender` | [string](#string) |  | the sender address |
-| `receiver` | [string](#string) |  | the recipient address on the destination chain |
+| `sender` | [bytes](#bytes) |  | the sender address |
+| `receiver` | [bytes](#bytes) |  | the recipient address on the destination chain |
 
 
 
