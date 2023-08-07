@@ -2,6 +2,7 @@ package transfer
 
 import (
 	"context"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"math"
@@ -365,13 +366,17 @@ func (am AppModule) OnAcknowledgementPacket(
 	relayer sdk.AccAddress,
 ) (*sdk.Result, error) {
 	var ack channeltypes.Acknowledgement
-
+	fmt.Println("============================== ibc-go acknowledgement: ", acknowledgement)
+	fmt.Println("============================== ibc-go acknowledgement: ", hex.EncodeToString(acknowledgement))
 	// TODO
 	//if err := types.ModuleCdc.UnmarshalJSON(acknowledgement, &ack); err != nil {
 	if err := types.ModuleCdc.Unmarshal(acknowledgement, &ack); err != nil {
 		return nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet acknowledgement: %v", err)
 	}
 	var data types.FungibleTokenPacketData
+	fmt.Printf("============================== ibc-go packet: %+v\n", packet)
+	fmt.Println("============================== ibc-go packet.data: ", packet.GetData())
+	fmt.Println("============================== ibc-go packet.data: ", hex.EncodeToString(packet.GetData()))
 	//if err := types.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err != nil {
 	if err := types.ModuleCdc.Unmarshal(packet.GetData(), &data); err != nil {
 		return nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet data: %s", err.Error())
